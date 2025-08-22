@@ -1,15 +1,11 @@
 ﻿using System;
-using BepInEx;
 using EntityStates;
 using R2API;
 using RoR2;
 using RoR2.Skills;
-using RoR2.Orbs;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using UnityEngine.Networking;
-using System.Collections.Generic;
-using System.Linq;
+using RoR2.Projectile;
 using EntityStates.Huntress;
 
 namespace HuntressSkills.Skills
@@ -34,7 +30,7 @@ namespace HuntressSkills.Skills
             mySkillDef.activationState = new SerializableEntityStateType(typeof(SwiftManeuverSkill));
             mySkillDef.activationStateMachineName = "Weapon";
             mySkillDef.baseMaxStock = 1;
-            mySkillDef.baseRechargeInterval = 14f;
+            mySkillDef.baseRechargeInterval = 1.4f;
             mySkillDef.beginSkillCooldownOnSkillEnd = true;
             mySkillDef.canceledFromSprinting = false;
             mySkillDef.cancelSprintingOnActivation = false;
@@ -74,105 +70,117 @@ namespace HuntressSkills.Skills
         {
             private Transform modelTransform;
 
-            public float firstBlinkDuration = 0.3f;
+            public float baseFirstBlinkDuration = 0.3f;
 
-            public float shotDuration;
+            public float shotDuration = 0.3f;
 
-            public float secondBlinkDuration = 0.3f;
+            public float baseSecondBlinkDuration = 0.3f;
 
-            public float jumpCoefficient = 12f;
+            public float distanceCoefficient = 5f;
 
             public static GameObject blinkPrefab = BaseBeginArrowBarrage.blinkPrefab;
 
             public static string blinkSoundString = BaseBeginArrowBarrage.blinkSoundString;
 
-            [SerializeField]
-            public Vector3 blinkVector;
+            public HuntressTracker huntressTracker;
 
-            private Vector3 worldBlinkVector;
+            public Vector3 blinkVector = Vector3.zero;
 
-            private float prepDuration;
+            public float firstBlinkUpForce = 0.5f;
 
-            private bool beginBlink;
+            public float secondBlinkDownForce = 0.5f;
+
+
+            private float firstBlinkDuration;
+
+            private float secondBlinkDuration;
+
+            private bool beginsecondBlink = false;
 
             private CharacterModel characterModel;
 
             private HurtBoxGroup hurtboxGroup;
 
-            protected CameraTargetParams.AimRequest aimRequest;
-
             public override void OnEnter()
             {
                 base.OnEnter();
                 Util.PlaySound(blinkSoundString, base.gameObject);
+                huntressTracker = GetComponent<HuntressTracker>();
+                if ((bool)huntressTracker)
+                {
+                    huntressTracker.enabled = false;
+                }
                 modelTransform = GetModelTransform();
                 if ((bool)modelTransform)
                 {
                     characterModel = modelTransform.GetComponent<CharacterModel>();
                     hurtboxGroup = modelTransform.GetComponent<HurtBoxGroup>();
                 }
-                prepDuration = firstBlinkDuration / attackSpeedStat;
-                PlayAnimation("FullBody, Override", "BeginArrowRain", "BeginArrowRain.playbackRate", prepDuration);
+
+                firstBlinkDuration = baseFirstBlinkDuration / attackSpeedStat;
+                secondBlinkDuration = baseSecondBlinkDuration / attackSpeedStat;
+                //PlayAnimation("FullBody, Override", "BeginArrowRain", "BeginArrowRain.playbackRate", firstBlinkDuration);
                 if ((bool)base.characterMotor)
                 {
                     base.characterMotor.velocity = Vector3.zero;
                 }
-                if ((bool)base.cameraTargetParams)
-                {
-                    aimRequest = base.cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Aura);
-                }
-                Vector3 direction = GetAimRay().direction;
-                direction.y = 0f;
-                direction.Normalize();
+
+                base.characterMotor.rootMotion += Vector3.up; //malke little initial hop
                 Vector3 up = Vector3.up;
-                worldBlinkVector = Matrix4x4.TRS(base.transform.position, Util.QuaternionSafeLookRotation(direction, up), new Vector3(1f, 1f, 1f)).MultiplyPoint3x4(blinkVector) - base.transform.position;
-                worldBlinkVector.Normalize();
+                blinkVector = (GetUserMovVector() + up * firstBlinkUpForce).normalized;
+                CreateBlinkEffect(base.transform.position);
+                //PlayCrossfade("Body", "ArrowBarrageLoop", 0.1f);
+            }
+
+            public Vector3 GetUserMovVector()
+            {
+                return ((base.inputBank.moveVector == Vector3.zero) ? base.characterDirection.forward : base.inputBank.moveVector).normalized;
             }
 
             private void CreateBlinkEffect(Vector3 origin)
             {
-                /*
                 EffectData effectData = new EffectData();
-                effectData.rotation = Util.QuaternionSafeLookRotation(worldBlinkVector);
+                effectData.rotation = Util.QuaternionSafeLookRotation(blinkVector);
                 effectData.origin = origin;
-                EffectManager.SpawnEffect(blinkPrefab, effectData, transmit: false);
-                */
+                EffectManager.SpawnEffect(blinkPrefab, effectData, transmit: false);  
             }
 
             public override void FixedUpdate()
             {
                 base.FixedUpdate();
-                /*
-                if (base.fixedAge >= prepDuration && !beginBlink)
+
+                base.characterMotor.velocity = Vector3.zero;
+                base.characterMotor.rootMotion += blinkVector * (moveSpeedStat * distanceCoefficient * Time.fixedDeltaTime);
+
+
+                //shoot the arrows
+                if (base.fixedAge >= firstBlinkDuration && !beginsecondBlink && base.characterMotor)
                 {
-                    beginBlink = true;
+                    blinkVector = new Vector3();
+                    ProjectileManager.instance.FireProjectile(projectilePrefab, areaIndicatorInstance.transform.position, areaIndicatorInstance.transform.rotation, base.gameObject, damageStat * damageCoefficient, 0f, Util.CheckRoll(critStat, base.characterBody.master));
+
+                }
+
+                //make the last blink
+                if (base.fixedAge >= (firstBlinkDuration + shotDuration) && !beginsecondBlink && base.characterMotor)
+                {
+                    Vector3 down = Vector3.down;
+                    blinkVector = (GetUserMovVector() + down * secondBlinkDownForce).normalized;
                     CreateBlinkEffect(base.transform.position);
-                    if ((bool)characterModel)
-                    {
-                        characterModel.invisibilityCount++;
-                    }
-                    if ((bool)hurtboxGroup)
-                    {
-                        HurtBoxGroup hurtBoxGroup = hurtboxGroup;
-                        int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter + 1;
-                        hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
-                    }
+                    beginsecondBlink = true;
+                    //outer.SetNextState(new AimArrowSnipe());
                 }
-                if (beginBlink && (bool)base.characterMotor)
+
+
+                if (base.fixedAge >= (firstBlinkDuration + secondBlinkDuration + shotDuration) && base.isAuthority)
                 {
-                    base.characterMotor.velocity = Vector3.zero;
-                    base.characterMotor.rootMotion += worldBlinkVector * (base.characterBody.jumpPower * jumpCoefficient * Time.fixedDeltaTime);
+                    outer.SetNextStateToMain();
                 }
-                if (base.fixedAge >= shotDuration + prepDuration && base.isAuthority)
-                {
-                    outer.SetNextState(new AimArrowSnipe());
-                }
-                */
             }
 
             public override void OnExit()
             {
-                /*
+                
                 CreateBlinkEffect(base.transform.position);
                 modelTransform = GetModelTransform();
                 if ((bool)modelTransform)
@@ -202,8 +210,13 @@ namespace HuntressSkills.Skills
                     int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter - 1;
                     hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
                 }
-                aimRequest?.Dispose();
-                */
+
+                if ((bool)huntressTracker)
+                {
+                    huntressTracker.enabled = true;
+                }
+
+
                 base.OnExit();
             }
         }
