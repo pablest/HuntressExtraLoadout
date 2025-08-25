@@ -81,7 +81,7 @@ namespace HuntressSkills.Skills
             public static float damageCoefficientPerBounce = 0.7f;
             public static float glaiveProcCoefficient = 0.8f;
             public static int maxBounceCount = 3;
-            public static float glaiveTravelSpeed = 50f;
+            public static float glaiveTravelSpeed = 45f;
             public static float glaiveBounceRange = 30f;
 
             public static GameObject chargePrefab = ThrowGlaive.chargePrefab;

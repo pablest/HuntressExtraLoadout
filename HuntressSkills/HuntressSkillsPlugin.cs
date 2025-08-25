@@ -29,10 +29,11 @@ namespace HuntressSkills
             //easy to use logger
             Log.Init(Logger);
 
-
+            Skills.FireHeavyArrow.Initialize(this);
             Skills.SplittingGlaive.Initialize(this);
             Skills.StalkingThePrey.Initialize(this);
             Skills.SwiftManeuver.Initialize(this);
+            //damage type .BypassArmor
             // make a content pack and add it. this has to be last
             //new Modules.ContentPacks().Initialize();
         }

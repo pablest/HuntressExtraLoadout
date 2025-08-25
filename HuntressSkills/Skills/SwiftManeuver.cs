@@ -2,11 +2,20 @@
 using EntityStates;
 using R2API;
 using RoR2;
+using RoR2.UI;
 using RoR2.Skills;
+using RoR2.Orbs;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using RoR2.Projectile;
 using EntityStates.Huntress;
+using EntityStates.Huntress.HuntressWeapon;
+using EntityStates.GravekeeperBoss;
+using EntityStates.Huntress.Weapon;
+using static UnityEngine.ParticleSystem.PlaybackState;
+using System.Reflection;
+using static Rewired.UI.ControlMapper.ControlMapper;
+using static UnityEngine.UI.Image;
 
 namespace HuntressSkills.Skills
 {
@@ -29,8 +38,8 @@ namespace HuntressSkills.Skills
             //Check step 2 for the code of the CustomSkillsTutorial.MyEntityStates.SimpleBulletAttack class
             mySkillDef.activationState = new SerializableEntityStateType(typeof(SwiftManeuverSkill));
             mySkillDef.activationStateMachineName = "Weapon";
-            mySkillDef.baseMaxStock = 1;
-            mySkillDef.baseRechargeInterval = 1.4f;
+            mySkillDef.baseMaxStock = 2;
+            mySkillDef.baseRechargeInterval = 8f;
             mySkillDef.beginSkillCooldownOnSkillEnd = true;
             mySkillDef.canceledFromSprinting = false;
             mySkillDef.cancelSprintingOnActivation = false;
@@ -66,59 +75,106 @@ namespace HuntressSkills.Skills
             };
         }
 
+       //2 ideas q tp dispares manualmente y blink extra en crit
+       //o 3 cargas blink disp auto a donde miras o al visor de huntress criticos devuelven carga
         public class SwiftManeuverSkill : BaseSkillState
         {
             private Transform modelTransform;
 
-            public float baseFirstBlinkDuration = 0.3f;
+            public static float baseFirstBlinkDuration = 0.15f;
 
-            public float shotDuration = 0.3f;
+            public static float baseShotDuration = 0.3f;
 
-            public float baseSecondBlinkDuration = 0.3f;
+            public static float baseSecondBlinkDuration = 0.15f;
 
-            public float distanceCoefficient = 5f;
+            public static float distanceCoefficient = 5f;
+
+            public static  float damageCoefficient = 11f;
+
+            public static float procCoefficient = 1.5f;
 
             public static GameObject blinkPrefab = BaseBeginArrowBarrage.blinkPrefab;
 
             public static string blinkSoundString = BaseBeginArrowBarrage.blinkSoundString;
 
+            public static string shotMuzzleString;
+
+            public static GameObject shotMuzzleEffectPrefab;
+
+            public static GameObject projectilePrefab = ArrowRain.projectilePrefab;
+
+            public static SkillDef primarySkillDef = AimArrowSnipe.primarySkillDef;
+
+            public static GameObject crosshairOverridePrefab = AimArrowSnipe.crosshairOverridePrefab;
+
             public HuntressTracker huntressTracker;
 
             public Vector3 blinkVector = Vector3.zero;
 
-            public float firstBlinkUpForce = 0.5f;
+            public float firstBlinkUpForce = 0.3f;
 
-            public float secondBlinkDownForce = 0.5f;
-
+            public float secondBlinkDownForce = 0.3f;
 
             private float firstBlinkDuration;
 
+            public float shotDuration;
+
+            public float fsDuration;
+
             private float secondBlinkDuration;
 
-            private bool beginsecondBlink = false;
+            public float fssDuration;
+
+            public HurtBox huntressTrackerTarget;
+
+            private bool beginShot = false;
+
+            private bool beginSecondBlink = false;
 
             private CharacterModel characterModel;
 
-            private HurtBoxGroup hurtboxGroup;
+
+            public Vector3 GetUserMovVector()
+            {
+                return ((base.inputBank.moveVector == Vector3.zero) ? base.characterDirection.forward : base.inputBank.moveVector).normalized;
+            }
+
+            private void CreateBlinkEffect(Vector3 origin)
+            {
+                EffectData effectData = new EffectData();
+                effectData.rotation = Util.QuaternionSafeLookRotation(blinkVector);
+                effectData.origin = origin;
+                EffectManager.SpawnEffect(blinkPrefab, effectData, transmit: false);
+            }
 
             public override void OnEnter()
             {
                 base.OnEnter();
+
                 Util.PlaySound(blinkSoundString, base.gameObject);
                 huntressTracker = GetComponent<HuntressTracker>();
+     
+
                 if ((bool)huntressTracker)
                 {
+                    huntressTrackerTarget = huntressTracker.GetTrackingTarget();
                     huntressTracker.enabled = false;
                 }
                 modelTransform = GetModelTransform();
                 if ((bool)modelTransform)
                 {
                     characterModel = modelTransform.GetComponent<CharacterModel>();
-                    hurtboxGroup = modelTransform.GetComponent<HurtBoxGroup>();
                 }
 
                 firstBlinkDuration = baseFirstBlinkDuration / attackSpeedStat;
                 secondBlinkDuration = baseSecondBlinkDuration / attackSpeedStat;
+                shotDuration = baseShotDuration / attackSpeedStat;
+                fsDuration = firstBlinkDuration + shotDuration;
+                fssDuration = fsDuration + secondBlinkDuration;
+
+                shotMuzzleString = FireHook.muzzleString;
+                shotMuzzleEffectPrefab = FireHook.muzzleflashEffectPrefab;
+
                 //PlayAnimation("FullBody, Override", "BeginArrowRain", "BeginArrowRain.playbackRate", firstBlinkDuration);
                 if ((bool)base.characterMotor)
                 {
@@ -132,47 +188,36 @@ namespace HuntressSkills.Skills
                 //PlayCrossfade("Body", "ArrowBarrageLoop", 0.1f);
             }
 
-            public Vector3 GetUserMovVector()
-            {
-                return ((base.inputBank.moveVector == Vector3.zero) ? base.characterDirection.forward : base.inputBank.moveVector).normalized;
-            }
-
-            private void CreateBlinkEffect(Vector3 origin)
-            {
-                EffectData effectData = new EffectData();
-                effectData.rotation = Util.QuaternionSafeLookRotation(blinkVector);
-                effectData.origin = origin;
-                EffectManager.SpawnEffect(blinkPrefab, effectData, transmit: false);  
-            }
-
             public override void FixedUpdate()
             {
                 base.FixedUpdate();
 
-                base.characterMotor.velocity = Vector3.zero;
-                base.characterMotor.rootMotion += blinkVector * (moveSpeedStat * distanceCoefficient * Time.fixedDeltaTime);
-
-
-                //shoot the arrows
-                if (base.fixedAge >= firstBlinkDuration && !beginsecondBlink && base.characterMotor)
+                if (base.characterMotor)
                 {
-                    blinkVector = new Vector3();
-                    ProjectileManager.instance.FireProjectile(projectilePrefab, areaIndicatorInstance.transform.position, areaIndicatorInstance.transform.rotation, base.gameObject, damageStat * damageCoefficient, 0f, Util.CheckRoll(critStat, base.characterBody.master));
-
+                    base.characterMotor.velocity = Vector3.zero;
+                    base.characterMotor.rootMotion += blinkVector * (moveSpeedStat * distanceCoefficient * Time.fixedDeltaTime);
                 }
-
+               
+                //shoot the arrows mechanic
+                if (base.fixedAge >= firstBlinkDuration && !beginShot)
+                {
+                    beginShot = true;
+                    blinkVector = Vector3.zero;
+                    PlayAnimation("Body", "FireArrowSnipe", "FireArrowSnipe.playbackRate", shotDuration);
+                    SwiftShot();
+                }
                 //make the last blink
-                if (base.fixedAge >= (firstBlinkDuration + shotDuration) && !beginsecondBlink && base.characterMotor)
+                if (base.fixedAge >= fsDuration && !beginSecondBlink)
                 {
                     Vector3 down = Vector3.down;
                     blinkVector = (GetUserMovVector() + down * secondBlinkDownForce).normalized;
                     CreateBlinkEffect(base.transform.position);
-                    beginsecondBlink = true;
+                    beginSecondBlink = true;
                     //outer.SetNextState(new AimArrowSnipe());
                 }
 
-
-                if (base.fixedAge >= (firstBlinkDuration + secondBlinkDuration + shotDuration) && base.isAuthority)
+                //exit
+                if (base.fixedAge >= fssDuration && base.isAuthority)
                 {
                     outer.SetNextStateToMain();
                 }
@@ -180,8 +225,8 @@ namespace HuntressSkills.Skills
 
             public override void OnExit()
             {
-                
                 CreateBlinkEffect(base.transform.position);
+                /*
                 modelTransform = GetModelTransform();
                 if ((bool)modelTransform)
                 {
@@ -200,15 +245,10 @@ namespace HuntressSkills.Skills
                     temporaryOverlay2.originalMaterial = LegacyResourcesAPI.Load<Material>("Materials/matHuntressFlashExpanded");
                     temporaryOverlay2.AddToCharacerModel(modelTransform.GetComponent<CharacterModel>());
                 }
+                */
                 if ((bool)characterModel)
                 {
                     characterModel.invisibilityCount--;
-                }
-                if ((bool)hurtboxGroup)
-                {
-                    HurtBoxGroup hurtBoxGroup = hurtboxGroup;
-                    int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter - 1;
-                    hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
                 }
 
                 if ((bool)huntressTracker)
@@ -219,6 +259,76 @@ namespace HuntressSkills.Skills
 
                 base.OnExit();
             }
+
+            public override InterruptPriority GetMinimumInterruptPriority()
+            {
+                return InterruptPriority.Skill;
+            }
+
+
+
+            public void SwiftShot()
+            {
+
+                //PlayCrossfade("Gesture, Override", "FireSeekingShot", "FireSeekingShot.playbackRate", duration, duration * 0.2f / attackSpeedStat);
+                //PlayCrossfade("Gesture, Additive", "FireSeekingShot", "FireSeekingShot.playbackRate", duration, duration * 0.2f / attackSpeedStat);
+
+                Ray aimRay = GetAimRay();
+                FireArrowSnipe f = new FireArrowSnipe(); // NOTE try to use prefabs instead of instanciate f
+                //f.fireSoundString
+                //2 modes, if enemy is tracked then the sot goes for it, if not, it shot a bullet where the character is looking
+                Vector3 aimVector;
+                if (huntressTrackerTarget)
+                {
+                    Vector3 enemyPosition = huntressTrackerTarget.transform.position; // or enemyTransform.position
+                    aimVector = (enemyPosition - aimRay.origin).normalized;
+                }
+                else
+                {
+                    aimVector = aimRay.direction;
+                }
+
+                //rotate character to face the enemy
+                Vector3 flatDirection = new Vector3(aimVector.x, 0f, aimRay.origin.z);
+                if (flatDirection != Vector3.zero)
+                {
+                    modelTransform.forward = flatDirection; // instantly snap to direction
+                }
+                
+
+                base.healthComponent.TakeDamageForce(aimRay.direction * -400f, alwaysApply: true);
+
+
+                Boolean isCrit = RollCrit();
+                //recharge cooldown if crit
+                if (isCrit) {characterBody.skillLocator.special.AddOneStock();}
+
+                BulletAttack bullet = new BulletAttack
+                {
+                    aimVector = aimVector,
+                    origin = aimRay.origin,
+                    owner = base.gameObject,
+                    weapon = null,
+                    bulletCount = (uint)1,
+                    damage = damageStat * damageCoefficient,
+                    damageColorIndex = DamageColorIndex.Default,
+                    falloffModel = BulletAttack.FalloffModel.Buckshot,
+                    force = 2000f,
+                    procChainMask = default(ProcChainMask),
+                    procCoefficient = procCoefficient,
+                    maxDistance = 4000f,
+                    isCrit = isCrit,
+                    muzzleName = f.muzzleName,
+                    hitEffectPrefab = f.hitEffectPrefab,
+                    spreadPitchScale = f.spreadPitchScale,
+                    spreadYawScale = f.spreadYawScale,
+                    tracerEffectPrefab = f.tracerEffectPrefab
+                };
+                bullet.Fire();
+
+            }
+
+            
         }
     }
 }
