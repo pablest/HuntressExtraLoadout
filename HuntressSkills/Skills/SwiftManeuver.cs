@@ -275,7 +275,8 @@ namespace HuntressSkills.Skills
 
                 Ray aimRay = GetAimRay();
                 FireArrowSnipe f = new FireArrowSnipe(); // NOTE try to use prefabs instead of instanciate f
-                //f.fireSoundString
+                Util.PlayAttackSpeedSound(f.fireSoundString, base.gameObject, attackSpeedStat);
+
                 //2 modes, if enemy is tracked then the sot goes for it, if not, it shot a bullet where the character is looking
                 Vector3 aimVector;
                 if (huntressTrackerTarget)

@@ -71,11 +71,15 @@ namespace HuntressSkills.Skills
         }
         public class FireHeavyArrowAttack : BaseSkillState
         {
-            [SerializeField]
-            public float orbDamageCoefficient;
+            public float orbDamageCoefficient = 5f;
 
-            [SerializeField]
-            public float orbProcCoefficient;
+            public float orbProcCoefficient = 3f;
+
+            public float attackSpeedDamageConversion = 3f;
+
+            public float attackSpeedProcConversion = 2f;
+
+            public float fixedAttackSpeed = 1f;
 
             [SerializeField]
             public string muzzleString;
@@ -86,24 +90,17 @@ namespace HuntressSkills.Skills
             [SerializeField]
             public string attackSoundString;
 
-            [SerializeField]
-            public float baseDuration;
+            public float baseDuration = 1.5f;
 
-            [SerializeField]
-            public int maxArrowCount;
-
-            [SerializeField]
-            public float baseArrowReloadDuration;
+            public float baseArrowReloadDuration = 0f;
 
             private float duration;
 
-            protected float arrowReloadDuration;
-
-            private float arrowReloadTimer;
+            protected float arrowReloadTimer;
 
             protected bool isCrit;
 
-            private int firedArrowCount;
+            private int firedArrowCount = 0;
 
             private HurtBox initialOrbTarget;
 
@@ -116,6 +113,13 @@ namespace HuntressSkills.Skills
             public override void OnEnter()
             {
                 base.OnEnter();
+                
+                //NOTE: change this so instead of instanciate this, it use directly the assets
+                FireSeekingArrow f = new FireSeekingArrow();
+                this.muzzleString = f.muzzleString;
+                this.muzzleflashEffectPrefab = f.muzzleflashEffectPrefab;
+                this.attackSoundString = f.attackSoundString;
+
                 Transform modelTransform = GetModelTransform();
                 huntressTracker = GetComponent<HuntressTracker>();
                 if ((bool)modelTransform)
@@ -123,26 +127,26 @@ namespace HuntressSkills.Skills
                     childLocator = modelTransform.GetComponent<ChildLocator>();
                     animator = modelTransform.GetComponent<Animator>();
                 }
-                Util.PlayAttackSpeedSound(attackSoundString, base.gameObject, attackSpeedStat);
+                Util.PlayAttackSpeedSound(attackSoundString, base.gameObject, fixedAttackSpeed);
                 if ((bool)huntressTracker && base.isAuthority)
                 {
                     initialOrbTarget = huntressTracker.GetTrackingTarget();
                 }
-                duration = baseDuration / attackSpeedStat;
-                arrowReloadDuration = baseArrowReloadDuration / attackSpeedStat;
+                duration = baseDuration / fixedAttackSpeed;
+                arrowReloadTimer = baseArrowReloadDuration / fixedAttackSpeed;
                 if ((bool)base.characterBody)
                 {
                     base.characterBody.SetAimTimer(duration + 1f);
                 }
-                PlayCrossfade("Gesture, Override", "FireSeekingShot", "FireSeekingShot.playbackRate", duration, duration * 0.2f / attackSpeedStat);
-                PlayCrossfade("Gesture, Additive", "FireSeekingShot", "FireSeekingShot.playbackRate", duration, duration * 0.2f / attackSpeedStat);
+                PlayCrossfade("Gesture, Override", "FireSeekingShot", "FireSeekingShot.playbackRate", duration, duration * 1f / fixedAttackSpeed);
+                PlayCrossfade("Gesture, Additive", "FireSeekingShot", "FireSeekingShot.playbackRate", duration, duration * 0.2f / fixedAttackSpeed);
                 isCrit = Util.CheckRoll(base.characterBody.crit, base.characterBody.master);
             }
 
             public override void OnExit()
             {
                 base.OnExit();
-                FireOrbArrow();
+                
             }
 
             protected virtual GenericDamageOrb CreateArrowOrb()
@@ -152,16 +156,21 @@ namespace HuntressSkills.Skills
 
             private void FireOrbArrow()
             {
-                if (firedArrowCount < maxArrowCount && !(arrowReloadTimer > 0f) && NetworkServer.active)
+                if (firedArrowCount <1 && !(arrowReloadTimer > 0f) && NetworkServer.active)
                 {
                     firedArrowCount++;
-                    arrowReloadTimer = arrowReloadDuration;
+                    float damageSpeedIncrease = Math.Max(0, attackSpeedDamageConversion * (attackSpeedStat - 1));
+                    float procSpeedIncrease = Math.Max(0, attackSpeedProcConversion * (attackSpeedStat - 1));
+
                     GenericDamageOrb genericDamageOrb = CreateArrowOrb();
-                    genericDamageOrb.damageValue = base.characterBody.damage * orbDamageCoefficient;
+                    genericDamageOrb.damageValue = base.characterBody.damage * (orbDamageCoefficient + damageSpeedIncrease);
+                    genericDamageOrb.damageType = DamageType.BypassArmor;
                     genericDamageOrb.isCrit = isCrit;
                     genericDamageOrb.teamIndex = TeamComponent.GetObjectTeam(base.gameObject);
                     genericDamageOrb.attacker = base.gameObject;
-                    genericDamageOrb.procCoefficient = orbProcCoefficient;
+                    genericDamageOrb.procCoefficient = orbProcCoefficient + procSpeedIncrease;
+                    genericDamageOrb.speed = 7f;
+                    genericDamageOrb.scale = 50f; //sobreescribir GetOrbEffect con un nueov orbe y asi la escala hace algo, ver como hacer mas pen armor para hacerlo neg
                     HurtBox hurtBox = initialOrbTarget;
                     if ((bool)hurtBox)
                     {
@@ -177,11 +186,13 @@ namespace HuntressSkills.Skills
             public override void FixedUpdate()
             {
                 base.FixedUpdate();
+
                 arrowReloadTimer -= Time.fixedDeltaTime;
                 if (animator.GetFloat("FireSeekingShot.fire") > 0f)
                 {
                     FireOrbArrow();
                 }
+
                 if (base.fixedAge > duration && base.isAuthority)
                 {
                     outer.SetNextStateToMain();
@@ -193,15 +204,6 @@ namespace HuntressSkills.Skills
                 return InterruptPriority.Skill;
             }
 
-            public override void OnSerialize(NetworkWriter writer)
-            {
-                writer.Write(HurtBoxReference.FromHurtBox(initialOrbTarget));
-            }
-
-            public override void OnDeserialize(NetworkReader reader)
-            {
-                initialOrbTarget = reader.ReadHurtBoxReference().ResolveHurtBox();
-            }
         }
     }
 }
