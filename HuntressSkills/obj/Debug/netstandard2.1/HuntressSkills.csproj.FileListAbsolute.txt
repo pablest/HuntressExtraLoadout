@@ -21,3 +21,16 @@ C:\Users\pable\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\obj\Debug\net
 C:\Users\pable\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\bin\Debug\netstandard2.1\R2API.RecalculateStats.dll
 C:\Users\pable\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\obj\Debug\netstandard2.1\Huntress.E201AE53.Up2Date
 C:\Users\pable\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\obj\Debug\netstandard2.1\HuntressSkills.sourcelink.json
+C:\Users\Pablest\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\bin\Debug\netstandard2.1\HuntressSkills.deps.json
+C:\Users\Pablest\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\bin\Debug\netstandard2.1\HuntressSkills.dll
+C:\Users\Pablest\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\bin\Debug\netstandard2.1\HuntressSkills.pdb
+C:\Users\Pablest\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\bin\Debug\netstandard2.1\R2API.RecalculateStats.dll
+C:\Users\Pablest\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\obj\Debug\netstandard2.1\HuntressSkills.csproj.AssemblyReference.cache
+C:\Users\Pablest\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\obj\Debug\netstandard2.1\HuntressSkills.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Pablest\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\obj\Debug\netstandard2.1\HuntressSkills.AssemblyInfoInputs.cache
+C:\Users\Pablest\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\obj\Debug\netstandard2.1\HuntressSkills.AssemblyInfo.cs
+C:\Users\Pablest\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\obj\Debug\netstandard2.1\HuntressSkills.csproj.CoreCompileInputs.cache
+C:\Users\Pablest\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\obj\Debug\netstandard2.1\HuntressSkills.sourcelink.json
+C:\Users\Pablest\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\obj\Debug\netstandard2.1\Huntress.E201AE53.Up2Date
+C:\Users\Pablest\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\obj\Debug\netstandard2.1\HuntressSkills.dll
+C:\Users\Pablest\Desktop\ror2 mods\MoreHuntressSkills\HuntressSkills\obj\Debug\netstandard2.1\HuntressSkills.pdb

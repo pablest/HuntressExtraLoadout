@@ -19,7 +19,7 @@ using static UnityEngine.UI.Image;
 
 namespace HuntressSkills.Skills
 {
-    class SwiftManeuver
+    class SwiftManeuver 
     {
         public static void Initialize(HuntressSkillsPlugin pluginInfo)
         {
@@ -89,9 +89,11 @@ namespace HuntressSkills.Skills
 
             public static float distanceCoefficient = 5f;
 
-            public static  float damageCoefficient = 11f;
+            public static  float damageCoefficient = 7.5f;
 
-            public static float procCoefficient = 1.5f;
+            public static float procCoefficient = 1f;
+
+            public static float cooldownReductionOnCrit = 3f;
 
             public static GameObject blinkPrefab = BaseBeginArrowBarrage.blinkPrefab;
 
@@ -219,6 +221,8 @@ namespace HuntressSkills.Skills
                 //exit
                 if (base.fixedAge >= fssDuration && base.isAuthority)
                 {
+                    PlayAnimation("Body", "FireArrowSnipe", "FireArrowSnipe.playbackRate", shotDuration);
+                    SwiftShot();
                     outer.SetNextStateToMain();
                 }
             }
@@ -265,8 +269,6 @@ namespace HuntressSkills.Skills
                 return InterruptPriority.Skill;
             }
 
-
-
             public void SwiftShot()
             {
 
@@ -302,7 +304,19 @@ namespace HuntressSkills.Skills
 
                 Boolean isCrit = RollCrit();
                 //recharge cooldown if crit
-                if (isCrit) {characterBody.skillLocator.special.AddOneStock();}
+                if (isCrit)
+                {
+                    GenericSkill specialSkill = characterBody.skillLocator.special;
+                    if (specialSkill.stock < specialSkill.maxStock)
+                    {
+                        specialSkill.rechargeStopwatch += cooldownReductionOnCrit;
+                        //Ensure the cooldown dont pass the max cooldown
+                        if (specialSkill.rechargeStopwatch > specialSkill.skillDef.baseRechargeInterval)
+                        {
+                            specialSkill.rechargeStopwatch = specialSkill.skillDef.baseRechargeInterval;
+                        }
+                    }
+                }
 
                 BulletAttack bullet = new BulletAttack
                 {

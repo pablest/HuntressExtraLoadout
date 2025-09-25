@@ -28,14 +28,14 @@ namespace HuntressSkills.Skills
             LanguageAPI.Add(HuntressSkillsPlugin.DEVELOPER_PREFIX + "HUNTRESS_SECONDARY_SPLITTINGGLAIVE_DESCRIPTION", $"Fire a boomerang for <style=cIsDamage>300% damage</style>.");
 
             // Now we must create a SkillDef
-            SkillDef mySkillDef = ScriptableObject.CreateInstance<SkillDef>();
+            SkillDef mySkillDef = ScriptableObject.CreateInstance<HuntressTargetSkillDef>();
 
             //Check step 2 for the code of the CustomSkillsTutorial.MyEntityStates.SimpleBulletAttack class
             mySkillDef.activationState = new SerializableEntityStateType(typeof(SplittingGlaiveAttack));
             mySkillDef.activationStateMachineName = "Weapon";
             mySkillDef.baseMaxStock = 1;
             mySkillDef.baseRechargeInterval = 7f;
-            mySkillDef.beginSkillCooldownOnSkillEnd = false;
+            mySkillDef.beginSkillCooldownOnSkillEnd = true;
             mySkillDef.canceledFromSprinting = false;
             mySkillDef.cancelSprintingOnActivation = true;
             mySkillDef.fullRestockOnAssign = true;
@@ -69,7 +69,22 @@ namespace HuntressSkills.Skills
                 viewableNode = new ViewablesCatalog.Node(mySkillDef.skillNameToken, false, null)
             };
         }
-
+        public class HuntressTargetSkillDef : SkillDef
+        {
+            public override bool CanExecute(GenericSkill skillSlot)
+            {
+                if (base.CanExecute(skillSlot))
+                {
+                    var body = skillSlot.characterBody;
+                    if (body)
+                    {
+                        var tracker = body.GetComponent<HuntressTracker>();
+                        return tracker && (tracker.GetTrackingTarget() != null);
+                    }
+                }
+                return false;
+            }
+        }
         public class SplittingGlaiveAttack : BaseSkillState
         {
             public float baseDuration = 1f;

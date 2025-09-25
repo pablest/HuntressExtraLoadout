@@ -1,22 +1,21 @@
-﻿using System;
-using BepInEx;
+﻿using BepInEx;
+using BepInEx.Logging;
 using EntityStates;
+using EntityStates.Bandit2;
 using R2API;
 using RoR2;
-using RoR2.Skills;
 using RoR2.Orbs;
+using RoR2.Skills;
+using System;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Networking;
-using EntityStates.Bandit2;
 
 namespace HuntressSkills.Skills
 {
     public class StalkingThePrey
     {
         public static BuffDef StalkingThePreyFirstHit; //buff that gives 100% crit chance and damage
-        public static float StalkingThePreyFirstHitMultBuff = 0.3f;
-
 
         public static BuffDef PredatorFocus; //buff that gives crit chance and crit damage
         public static float PredatorFocusCritMultDamage = 0.5f;
@@ -83,7 +82,6 @@ namespace HuntressSkills.Skills
         {
             if (characterBody.HasBuff(StalkingThePreyFirstHit))
             {
-                args.damageMultAdd += StalkingThePreyFirstHitMultBuff;
                 args.critAdd += 100f; 
             }
         }
@@ -131,9 +129,9 @@ namespace HuntressSkills.Skills
 
             public static string exitStealthSound = StealthMode.exitStealthSound;
 
-            private Animator animator;
+            public Boolean skillAfterStalkingExecuted = false;//variable used for making next skill after invis deal more damage and the damage is buff not consumed for an instace of damage dealt before the skill is used //this will need some fix in the future to ensure only the skill damage is buffed
 
-            protected Boolean skillUsedAfterInvis = false; //variable used for making next skill after invis deal more damage and the damage is buff not consumed for an instace of damage dealt before the skill is used //this will need some fix in the future to ensure only the skill damage is buffed
+            private Animator animator;
 
             public override void OnEnter()
             {
@@ -148,15 +146,11 @@ namespace HuntressSkills.Skills
                         base.characterBody.AddBuff(RoR2Content.Buffs.Cloak);
                         base.characterBody.AddBuff(RoR2Content.Buffs.CloakSpeed);
                         base.characterBody.AddBuff(StalkingThePreyFirstHit);
-                        skillUsedAfterInvis = false;
+                        skillAfterStalkingExecuted = false;
                     }
 
                     //add a function to stop invis and add buff when user use a skill
                     base.characterBody.onSkillActivatedAuthority += OnSkillActivatedRemoveInvis;
-                    //add a function to remove the first hit buff when an enemy recieve damage from the atacker
-                    On.RoR2.GlobalEventManager.OnHitEnemy += OnHitEnemyRemoveFirstHitBuff;
-
-
                 }
                 Util.PlaySound(enterStealthSound, base.gameObject);
             }
@@ -170,12 +164,42 @@ namespace HuntressSkills.Skills
             public override void OnExit()
             {
                 base.OnExit();
+                On.EntityStates.EntityState.OnExit += RemoveFirstHitBuff;
             }
+
+            private void RemoveFirstHitBuff(On.EntityStates.EntityState.orig_OnExit orig, EntityState self)
+            {
+                UnityEngine.Debug.Log("Huntress RemoveFirstHitBuff");
+                orig(self);
+                // If the onExit is a baseSkill
+                if (self is BaseState skillState)
+                {
+                    UnityEngine.Debug.Log("Huntress RemoveFirstHitBuff BASESKILL");
+                    var body = self.characterBody;
+                    // and is executed by huntress
+                    if ((body != null) & (body == base.characterBody))
+                    {
+                        UnityEngine.Debug.Log("Huntress RemoveFirstHitBuff ISME");
+                        var characterBody = body.GetComponent<CharacterBody>();
+                        if (characterBody.HasBuff(StalkingThePreyFirstHit))
+                        {
+                            UnityEngine.Debug.Log("Huntress RemoveFirstHitBuff OKAY");
+                            characterBody.RemoveBuff(StalkingThePreyFirstHit);
+                            On.EntityStates.EntityState.OnExit -= RemoveFirstHitBuff;
+                        }
+                    }
+                }
+            }
+
 
             private void OnSkillActivatedRemoveInvis(GenericSkill skill)
             {
+
                 Util.PlaySound(exitStealthSound, base.gameObject);
                 //animator.SetLayerWeight(animator.GetLayerIndex("Body, StealthWeapon"), 0f);
+
+                //when user use a skill we allow to delete the RemoveFirstHitBuff
+                skillAfterStalkingExecuted = true;
 
                 //when user atacks, then the invis buff is removed and a damage buff is applied
                 if (skill.skillDef.isCombatSkill)
@@ -185,22 +209,9 @@ namespace HuntressSkills.Skills
                     base.characterBody.RemoveBuff(RoR2Content.Buffs.Cloak);
 
                     base.characterBody.AddTimedBuff(PredatorFocus, buffDuration);
-                    skillUsedAfterInvis = true;
 
                     //after that we remove the atack detection to be checked and reset the skill
                     base.characterBody.onSkillActivatedAuthority -= OnSkillActivatedRemoveInvis;
-                }
-            }
-
-            private void OnHitEnemyRemoveFirstHitBuff(On.RoR2.GlobalEventManager.orig_OnHitEnemy orig, RoR2.GlobalEventManager self, RoR2.DamageInfo damageInfo, GameObject victim)
-            {
-                var attacker = damageInfo.attacker;
-                if (attacker & skillUsedAfterInvis) 
-                {
-                    var characterBody = attacker.GetComponent<CharacterBody>();
-                    if (characterBody.HasBuff(StalkingThePreyFirstHit)){
-                        characterBody.RemoveBuff(StalkingThePreyFirstHit);
-                    }
                 }
             }
 

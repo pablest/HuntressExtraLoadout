@@ -15,7 +15,7 @@ using System.Linq;
 //para hacerlo sencillito, habilidad de glaive q rebota, al rebotar se divide en 2, hasta 2 veces. las kills hace q no se dividan las cosas
 namespace HuntressSkills.Skills
 {
-    public class FireHeavyArrow
+    public class FireHeavyArrow //Nota cambiar para q critico escale mas
     {
         public static void Initialize(HuntressSkillsPlugin pluginInfo)
         {
@@ -28,7 +28,7 @@ namespace HuntressSkills.Skills
             LanguageAPI.Add(HuntressSkillsPlugin.DEVELOPER_PREFIX + "HUNTRESS_PRIMARY_FIREHEAVYARROW_DESCRIPTION", $"Fire a boomerang for <style=cIsDamage>300% damage</style>.");
 
             // Now we must create a SkillDef
-            SkillDef mySkillDef = ScriptableObject.CreateInstance<SkillDef>();
+            SkillDef mySkillDef = ScriptableObject.CreateInstance<HuntressTargetSkillDef>();
 
             //Check step 2 for the code of the CustomSkillsTutorial.MyEntityStates.SimpleBulletAttack class
             mySkillDef.activationState = new SerializableEntityStateType(typeof(FireHeavyArrowAttack));
@@ -69,6 +69,24 @@ namespace HuntressSkills.Skills
                 viewableNode = new ViewablesCatalog.Node(mySkillDef.skillNameToken, false, null)
             };
         }
+
+        public class HuntressTargetSkillDef : SkillDef
+        {
+            public override bool CanExecute(GenericSkill skillSlot)
+            {
+                if(base.CanExecute(skillSlot))
+                {
+                    var body = skillSlot.characterBody;
+                    if (body)
+                    {
+                        var tracker = body.GetComponent<HuntressTracker>();
+                        return tracker && (tracker.GetTrackingTarget() != null);
+                    }
+                }
+                return false;
+            }
+        }
+
         public class FireHeavyArrowAttack : BaseSkillState
         {
             public float orbDamageCoefficient = 5f;
@@ -109,6 +127,7 @@ namespace HuntressSkills.Skills
             private HuntressTracker huntressTracker;
 
             private Animator animator;
+
 
             public override void OnEnter()
             {
