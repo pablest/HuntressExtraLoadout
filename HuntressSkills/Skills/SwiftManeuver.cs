@@ -2,20 +2,13 @@
 using EntityStates;
 using R2API;
 using RoR2;
-using RoR2.UI;
 using RoR2.Skills;
-using RoR2.Orbs;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using RoR2.Projectile;
 using EntityStates.Huntress;
-using EntityStates.Huntress.HuntressWeapon;
 using EntityStates.GravekeeperBoss;
 using EntityStates.Huntress.Weapon;
-using static UnityEngine.ParticleSystem.PlaybackState;
-using System.Reflection;
-using static Rewired.UI.ControlMapper.ControlMapper;
-using static UnityEngine.UI.Image;
+
 
 namespace HuntressSkills.Skills
 {
@@ -328,10 +321,10 @@ namespace HuntressSkills.Skills
                     damage = damageStat * damageCoefficient,
                     damageColorIndex = DamageColorIndex.Default,
                     falloffModel = BulletAttack.FalloffModel.Buckshot,
-                    force = 2000f,
+                    force = 2f,
                     procChainMask = default(ProcChainMask),
                     procCoefficient = procCoefficient,
-                    maxDistance = 4000f,
+                    maxDistance = 300f,
                     isCrit = isCrit,
                     muzzleName = f.muzzleName,
                     hitEffectPrefab = f.hitEffectPrefab,

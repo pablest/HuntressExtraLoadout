@@ -125,9 +125,10 @@ namespace HuntressSkills.Skills
         {
             public static float buffDuration = 5f;
 
-            public static string enterStealthSound = StealthMode.enterStealthSound;
+            public static string enterStealthSound = "Play_bandit2_shift_enter"; //usar el del latigo
 
-            public static string exitStealthSound = StealthMode.exitStealthSound;
+            public static GameObject featherEffectPrefab = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Feather/FeatherEffect.prefab").WaitForCompletion();
+
 
             public Boolean skillAfterStalkingExecuted = false;//variable used for making next skill after invis deal more damage and the damage is buff not consumed for an instace of damage dealt before the skill is used //this will need some fix in the future to ensure only the skill damage is buffed
 
@@ -140,6 +141,8 @@ namespace HuntressSkills.Skills
                 _ = (bool)animator;
                 if ((bool)base.characterBody)
                 {
+                    Util.PlaySound(enterStealthSound, base.gameObject);
+
                     //add invis buff
                     if (NetworkServer.active)
                     {
@@ -152,7 +155,6 @@ namespace HuntressSkills.Skills
                     //add a function to stop invis and add buff when user use a skill
                     base.characterBody.onSkillActivatedAuthority += OnSkillActivatedRemoveInvis;
                 }
-                Util.PlaySound(enterStealthSound, base.gameObject);
             }
 
             public override void FixedUpdate()
@@ -169,21 +171,18 @@ namespace HuntressSkills.Skills
 
             private void RemoveFirstHitBuff(On.EntityStates.EntityState.orig_OnExit orig, EntityState self)
             {
-                UnityEngine.Debug.Log("Huntress RemoveFirstHitBuff");
+                //UnityEngine.Debug.Log("Huntress RemoveFirstHitBuff");
                 orig(self);
                 // If the onExit is a baseSkill
                 if (self is BaseState skillState)
                 {
-                    UnityEngine.Debug.Log("Huntress RemoveFirstHitBuff BASESKILL");
                     var body = self.characterBody;
                     // and is executed by huntress
                     if ((body != null) & (body == base.characterBody))
                     {
-                        UnityEngine.Debug.Log("Huntress RemoveFirstHitBuff ISME");
                         var characterBody = body.GetComponent<CharacterBody>();
                         if (characterBody.HasBuff(StalkingThePreyFirstHit))
                         {
-                            UnityEngine.Debug.Log("Huntress RemoveFirstHitBuff OKAY");
                             characterBody.RemoveBuff(StalkingThePreyFirstHit);
                             On.EntityStates.EntityState.OnExit -= RemoveFirstHitBuff;
                         }
@@ -194,16 +193,22 @@ namespace HuntressSkills.Skills
 
             private void OnSkillActivatedRemoveInvis(GenericSkill skill)
             {
-
-                Util.PlaySound(exitStealthSound, base.gameObject);
-                //animator.SetLayerWeight(animator.GetLayerIndex("Body, StealthWeapon"), 0f);
-
-                //when user use a skill we allow to delete the RemoveFirstHitBuff
-                skillAfterStalkingExecuted = true;
-
                 //when user atacks, then the invis buff is removed and a damage buff is applied
                 if (skill.skillDef.isCombatSkill)
                 {
+
+                    //make effect and sound
+                    EffectManager.SpawnEffect(featherEffectPrefab, new EffectData
+                    {
+                        origin = transform.position,
+                        rotation = transform.rotation
+                    }, true);
+
+                    //animator.SetLayerWeight(animator.GetLayerIndex("Body, StealthWeapon"), 0f);
+
+                    //when user use a skill we allow to delete the RemoveFirstHitBuff
+                    skillAfterStalkingExecuted = true;
+
 
                     base.characterBody.RemoveBuff(RoR2Content.Buffs.CloakSpeed);
                     base.characterBody.RemoveBuff(RoR2Content.Buffs.Cloak);

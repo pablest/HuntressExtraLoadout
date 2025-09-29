@@ -29,6 +29,9 @@ namespace HuntressSkills
             //easy to use logger
             Log.Init(Logger);
 
+            //or
+            //UnityEngine.Debug.Log("PlaySound");
+
             Skills.FireHeavyArrow.Initialize(this);
             Skills.SplittingGlaive.Initialize(this);
             Skills.StalkingThePrey.Initialize(this);
