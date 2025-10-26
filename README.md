@@ -1,2 +1,2 @@
-# HuntressExtraLoadout
-Adds new abilities to Huntress, including a primary, secondary, utility and special ability.
+# MoreHuntressSkills
+A mod for Risk of Rain 2 that add new skills to Huntress
