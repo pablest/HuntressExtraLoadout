@@ -11,7 +11,7 @@ using EntityStates.Huntress.Weapon;
 
 
 namespace HuntressSkills.Skills
-{
+{ 
     class SwiftManeuver
     {
         public static void Initialize(HuntressSkillsPlugin pluginInfo)
@@ -20,7 +20,7 @@ namespace HuntressSkills.Skills
             GameObject huntressBodyPrefab = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Huntress/HuntressBody.prefab").WaitForCompletion();
 
             LanguageAPI.Add(HuntressSkillsPlugin.DEVELOPER_PREFIX + "HUNTRESS_SPECIAL_SWIFTMANEUVERSKILL_NAME", "Swift Maneuver");
-            LanguageAPI.Add(HuntressSkillsPlugin.DEVELOPER_PREFIX + "HUNTRESS_SPECIAL_SWIFTMANEUVERSKILL_DESCRIPTION", $"<style=cIsUtility>Agile</style>,  <style=cIsUtility>Dissapear</style> and <style=cIsUtility>teleport</style> a short distance, then shot an arrow for <style=cIsDamage>750% damage</style>, then, <style=cIsUtility>teleport</style> again and shot another arrow for <style=cIsDamage>750% damage</style>. Can store up to <style=cIsUtility>2 charges</style>.<style=cIsHealth>Critical Strikes</style> reduce cooldown by <style=cIsUtility>3 seconds</style>");
+            LanguageAPI.Add(HuntressSkillsPlugin.DEVELOPER_PREFIX + "HUNTRESS_SPECIAL_SWIFTMANEUVERSKILL_DESCRIPTION", $"<style=cIsUtility>Agile</style>. <style=cIsUtility>Disappear</style> and <style=cIsUtility>teleport</style> a short distance, firing an arrow for <style=cIsDamage>750% damage</style>. <style=cIsUtility>Teleport</style> again and fire another arrow for <style=cIsDamage>750% damage</style>. Can store up to <style=cIsUtility>2 charges</style>. <style=cIsHealth>Critical Strikes</style> reduce cooldown by <style=cIsUtility>3 seconds</style>.");
 
 
             // Now we must create a SkillDef
@@ -35,7 +35,7 @@ namespace HuntressSkills.Skills
             mySkillDef.canceledFromSprinting = false;
             mySkillDef.cancelSprintingOnActivation = false;
             mySkillDef.fullRestockOnAssign = true;
-            mySkillDef.interruptPriority = InterruptPriority.Any;
+            mySkillDef.interruptPriority = InterruptPriority.Skill;
             mySkillDef.isCombatSkill = true;
             mySkillDef.mustKeyPress = false;
             mySkillDef.rechargeStock = 1;
@@ -65,9 +65,6 @@ namespace HuntressSkills.Skills
                 viewableNode = new ViewablesCatalog.Node(mySkillDef.skillNameToken, false, null)
             };
         }
-
-       //2 ideas q tp dispares manualmente y blink extra en crit
-       //o 3 cargas blink disp auto a donde miras o al visor de huntress criticos devuelven carga
         public class SwiftManeuverSkill : BaseSkillState
         {
             private Transform modelTransform;
@@ -223,12 +220,6 @@ namespace HuntressSkills.Skills
                 // Restablish animation
                 PlayAnimation("Body", "Idle"); // Oe "Walk"
 
-                /*
-                if ((bool)characterModel)
-                {
-                    characterModel.invisibilityCount--;
-                }
-                */
 
                 if ((bool)huntressTracker)
                 {
@@ -241,7 +232,7 @@ namespace HuntressSkills.Skills
 
             public override InterruptPriority GetMinimumInterruptPriority()
             {
-                return InterruptPriority.Skill;
+                return InterruptPriority.PrioritySkill;
             }
 
             public void SwiftShot()

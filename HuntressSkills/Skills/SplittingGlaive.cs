@@ -14,6 +14,7 @@ using System.Linq;
 //para hacerlo sencillito, habilidad de glaive q rebota, al rebotar se divide en 2, hasta 2 veces. las kills hace q no se dividan las cosas
 namespace HuntressSkills.Skills
 {
+    
     public class SplittingGlaive
     {
         public static void Initialize(HuntressSkillsPlugin pluginInfo)
@@ -21,7 +22,7 @@ namespace HuntressSkills.Skills
             GameObject huntressBodyPrefab = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Huntress/HuntressBody.prefab").WaitForCompletion();
 
             LanguageAPI.Add(HuntressSkillsPlugin.DEVELOPER_PREFIX + "HUNTRESS_SECONDARY_SPLITTINGGLAIVE_NAME", "Splitting Glaive");
-            LanguageAPI.Add(HuntressSkillsPlugin.DEVELOPER_PREFIX + "HUNTRESS_SECONDARY_SPLITTINGGLAIVE_DESCRIPTION", $"Fire a boomerang for <style=cIsDamage>460% damage</style>. After collision it divides into 2 dealing <style=cIsDamage>70% of the original damage</style> up to <style=cIsDamage>3</style> times.");
+            LanguageAPI.Add(HuntressSkillsPlugin.DEVELOPER_PREFIX + "HUNTRESS_SECONDARY_SPLITTINGGLAIVE_DESCRIPTION", $"Throw a boomerang for <style=cIsDamage>460% damage</style>. On hit, it splits into 2, each dealing <style=cIsDamage>70%</style> of the original damage, up to <style=cIsDamage>3</style> times.");
 
             // Now we must create a SkillDef
             SkillDef mySkillDef = ScriptableObject.CreateInstance<HuntressTargetSkillDef>();
@@ -35,7 +36,7 @@ namespace HuntressSkills.Skills
             mySkillDef.canceledFromSprinting = false;
             mySkillDef.cancelSprintingOnActivation = true;
             mySkillDef.fullRestockOnAssign = true;
-            mySkillDef.interruptPriority = InterruptPriority.Any;
+            mySkillDef.interruptPriority = InterruptPriority.Skill;
             mySkillDef.isCombatSkill = true;
             mySkillDef.mustKeyPress = false;
             mySkillDef.rechargeStock = 1;
@@ -377,4 +378,5 @@ namespace HuntressSkills.Skills
             }
         }
     }
+    
 }

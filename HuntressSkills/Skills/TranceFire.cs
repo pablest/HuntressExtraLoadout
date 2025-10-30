@@ -8,8 +8,6 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Networking;
 
-
-//para hacerlo sencillito, habilidad de glaive q rebota, al rebotar se divide en 2, hasta 2 veces. las kills hace q no se dividan las cosas
 namespace HuntressSkills.Skills
 {
     public class TranceFire 
@@ -18,18 +16,18 @@ namespace HuntressSkills.Skills
 
         public static void Initialize(HuntressSkillsPlugin pluginInfo)
         {
-
+            
             GameObject huntressBodyPrefab = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Huntress/HuntressBody.prefab").WaitForCompletion();
 
             LanguageAPI.Add(HuntressSkillsPlugin.DEVELOPER_PREFIX + "HUNTRESS_PRIMARY_TRANCEFIRE_NAME", "Trance Fire");
-            LanguageAPI.Add(HuntressSkillsPlugin.DEVELOPER_PREFIX + "HUNTRESS_PRIMARY_TRANCEFIRE_DESCRIPTION", $"<style=cIsUtility>Agile</style>. Fire a seeking arrow for <style=cIsDamage>100% damage</style>. Firing it continously without recieving damage gain a charge of <style=cIsDamage>Focus</style> increasing the ability speed until a maximum of <style=cIsUtility>10</style>. At max <style=cIsDamage>Focus</style> fire <style=cIsDamage>2</style> arrows instead of <style=cIsDamage>2</style>.");
+            LanguageAPI.Add(HuntressSkillsPlugin.DEVELOPER_PREFIX + "HUNTRESS_PRIMARY_TRANCEFIRE_DESCRIPTION", $"<style=cIsUtility>Agile</style>. Fire a seeking arrow for <style=cIsDamage>100% damage</style>. Consecutive shots without taking damage grant <style=cIsDamage>Focus</style>, increasing attack speed up to <style=cIsUtility>10</style> stacks. At max <style=cIsDamage>Focus</style>, fire <style=cIsDamage>2</style> arrows.");
 
             // Now we must create a SkillDef
             SkillDef mySkillDef = ScriptableObject.CreateInstance<HuntressTargetSkillDef>();
 
             //Create the buffs we are going to do
             CreateBuff();
-
+            
             //Check step 2 for the code of the CustomSkillsTutorial.MyEntityStates.SimpleBulletAttack class
             mySkillDef.activationState = new SerializableEntityStateType(typeof(FireHeavyArrowAttack));
             mySkillDef.activationStateMachineName = "Weapon";
@@ -68,6 +66,7 @@ namespace HuntressSkills.Skills
                 unlockableName = "",
                 viewableNode = new ViewablesCatalog.Node(mySkillDef.skillNameToken, false, null)
             };
+            
         }
 
         public static void CreateBuff()
@@ -89,6 +88,8 @@ namespace HuntressSkills.Skills
         public static void OnHitTranceBuffElimination(On.RoR2.GlobalEventManager.orig_OnHitEnemy orig, GlobalEventManager self, DamageInfo damageInfo, GameObject victim)
         {
             //if the victim has the buff, remove all stacks
+            orig(self, damageInfo, victim);
+
             if (victim)
             {
                 var body = victim.GetComponent<CharacterBody>();
@@ -97,6 +98,7 @@ namespace HuntressSkills.Skills
                     body.ClearTimedBuffs(TranceBuff);
                 }
             }
+            
         }
 
 
@@ -104,7 +106,9 @@ namespace HuntressSkills.Skills
         {
             public override bool CanExecute(GenericSkill skillSlot)
             {
-                if(base.CanExecute(skillSlot))
+                base.CanExecute(skillSlot);
+
+                if (base.CanExecute(skillSlot))
                 {
                     var body = skillSlot.characterBody;
                     if (body)

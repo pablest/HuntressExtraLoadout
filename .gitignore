@@ -1,0 +1,13 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build artifacts
+bin/
+obj/
+Compiled mod/
+*.zip
+*.dll
+*.pdb
+*.cache

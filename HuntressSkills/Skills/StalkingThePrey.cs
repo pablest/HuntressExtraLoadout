@@ -24,7 +24,7 @@ namespace HuntressSkills.Skills
             GameObject huntressBodyPrefab = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Huntress/HuntressBody.prefab").WaitForCompletion();
 
             LanguageAPI.Add(HuntressSkillsPlugin.DEVELOPER_PREFIX + "HUNTRESS_UTILITY_STALKINGTHEPREY_NAME", "Stalking The Prey");
-            LanguageAPI.Add(HuntressSkillsPlugin.DEVELOPER_PREFIX + "HUNTRESS_UTILITY_STALKINGTHEPREY_DESCRIPTION", $"<style=cIsUtility>Agile</style>. Become <style=cIsUtility>Invisible</style>, make next ability <style=cIsHealth>Critical</style> and gain movement speed until a damage ability is used. Upon use, <style=cIsHealth>increases Critical Damage by 30%</style> and grants <style=cIsHealth>25% Critical Chance</style>.");
+            LanguageAPI.Add(HuntressSkillsPlugin.DEVELOPER_PREFIX + "HUNTRESS_UTILITY_STALKINGTHEPREY_DESCRIPTION", $"<style=cIsUtility>Agile</style>. Become <style=cIsUtility>Invisible</style>, making your next ability <style=cIsHealth>Critical</style> and increasing movement speed until you deal damage. On use, <style=cIsHealth>increase Critical Damage by 30%</style> and gain <style=cIsHealth>25% Critical Chance</style> for 4 seconds.");
 
             //Create the buffs we are going to do
             CreateBuffs();
@@ -41,7 +41,7 @@ namespace HuntressSkills.Skills
             mySkillDef.canceledFromSprinting = false;
             mySkillDef.cancelSprintingOnActivation = false;
             mySkillDef.fullRestockOnAssign = true;
-            mySkillDef.interruptPriority = InterruptPriority.Any;
+            mySkillDef.interruptPriority = InterruptPriority.Skill;
             mySkillDef.isCombatSkill = false;
             mySkillDef.mustKeyPress = false;
             mySkillDef.rechargeStock = 1;
@@ -128,6 +128,7 @@ namespace HuntressSkills.Skills
 
             public override void OnEnter()
             {
+
                 base.OnEnter();
                 animator = GetModelAnimator();
                 _ = (bool)animator;
@@ -222,7 +223,7 @@ namespace HuntressSkills.Skills
 
             public override InterruptPriority GetMinimumInterruptPriority()
             {
-                return InterruptPriority.Skill;
+                return InterruptPriority.PrioritySkill;
             }
         }
     }
