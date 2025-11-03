@@ -1,6 +1,8 @@
 # MoreHuntressSkills
 A mod for Risk of Rain 2 that adds new abilities to Huntress, including a primary, secondary, utility and special ability.
 
+This mod is currently in beta and may contain bugs or balance issues. Feedback and suggestions are greatly appreciated!
+
 These are the skills implemented:
 
 |   |   |   |
