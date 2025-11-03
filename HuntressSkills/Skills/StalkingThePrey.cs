@@ -183,7 +183,7 @@ namespace HuntressSkills.Skills
                     {
                         //UnityEngine.Debug.Log("BaseState");
                         var characterBody = body.GetComponent<CharacterBody>();
-                        if (characterBody.HasBuff(StalkingThePreyFirstHit))
+                        if (NetworkServer.active && characterBody.HasBuff(StalkingThePreyFirstHit))
                         {
                             //UnityEngine.Debug.Log("BaseState");
                             characterBody.RemoveBuff(StalkingThePreyFirstHit);
@@ -197,7 +197,7 @@ namespace HuntressSkills.Skills
             private void OnSkillActivatedRemoveInvis(GenericSkill skill)
             {
                 //when user atacks, then the invis buff is removed and a damage buff is applied
-                if (skill.skillDef.isCombatSkill)
+                if (skill.skillDef.isCombatSkill && base.characterBody != null)
                 {
 
                     //make effect and sound
@@ -209,14 +209,21 @@ namespace HuntressSkills.Skills
 
                     //animator.SetLayerWeight(animator.GetLayerIndex("Body, StealthWeapon"), 0f);
 
-                    // delete the RemoveFirstHitBuff
-
+                    // remove invis buffs on server
                     base.characterBody.RemoveBuff(RoR2Content.Buffs.CloakSpeed);
                     base.characterBody.RemoveBuff(RoR2Content.Buffs.Cloak);
+
+                    // add guaranteed crit buff 
+
+                    if (base.characterBody.HasBuff(StalkingThePreyFirstHit))
+                    {
+                        base.characterBody.RemoveBuff(StalkingThePreyFirstHit);
+                    }
 
                     base.characterBody.AddTimedBuff(PredatorFocus, buffDuration);
 
                     //after that we remove the atack detection to be checked and reset the skill
+                    
                     base.characterBody.onSkillActivatedAuthority -= OnSkillActivatedRemoveInvis;
                 }
             }

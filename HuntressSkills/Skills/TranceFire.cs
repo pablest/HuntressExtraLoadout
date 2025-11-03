@@ -106,8 +106,6 @@ namespace HuntressSkills.Skills
         {
             public override bool CanExecute(GenericSkill skillSlot)
             {
-                base.CanExecute(skillSlot);
-
                 if (base.CanExecute(skillSlot))
                 {
                     var body = skillSlot.characterBody;
@@ -156,7 +154,10 @@ namespace HuntressSkills.Skills
           
                 Transform modelTransform = GetModelTransform();
                 huntressTracker = GetComponent<HuntressTracker>();
-                initialOrbTarget = huntressTracker.GetTrackingTarget();
+                if (base.isAuthority && huntressTracker != null)
+                {
+                    initialOrbTarget = huntressTracker.GetTrackingTarget();
+                }
                 if (!(bool)modelTransform || !(bool)initialOrbTarget) {return;}
 
                 //childLocator = modelTransform.GetComponent<ChildLocator>();

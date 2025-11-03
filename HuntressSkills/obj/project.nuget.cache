@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "RAipPIQYPao=",
+  "dgSpecHash": "1N4GeGUQ7Gs=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Pablest\\Desktop\\ror2 mods\\HuntressExtraLoadout\\HuntressSkills\\HuntressSkills.csproj",
+  "projectFilePath": "C:\\Users\\Pablest\\Desktop\\ror2 mods\\MoreHuntressSkills\\HuntressSkills\\HuntressSkills.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Pablest\\.nuget\\packages\\bepinex.analyzers\\1.0.8\\bepinex.analyzers.1.0.8.nupkg.sha512",
     "C:\\Users\\Pablest\\.nuget\\packages\\bepinex.baselib\\5.4.20\\bepinex.baselib.5.4.20.nupkg.sha512",

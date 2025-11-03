@@ -1,0 +1,13 @@
+{
+  "name": "MoreHuntressSkills",
+  "version_number": "0.7.5",
+  "website_url": "https://github.com/pablest/MoreHuntressSkills.git",
+  "description": "Adds new abilities to Huntress, including a primary, secondary, utility and special ability.",
+  "dependencies": [
+    "bbepis-BepInExPack-5.4.2121",
+    "RiskofThunder-R2API_RecalculateStats-1.6.1",
+    "RiskofThunder-R2API_Items-1.0.7",
+    "RiskofThunder-R2API_Language-1.0.1"
+
+  ]
+}

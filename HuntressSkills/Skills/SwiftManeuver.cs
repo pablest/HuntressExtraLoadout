@@ -30,7 +30,7 @@ namespace HuntressSkills.Skills
             mySkillDef.activationState = new SerializableEntityStateType(typeof(SwiftManeuverSkill));
             mySkillDef.activationStateMachineName = "Weapon";
             mySkillDef.baseMaxStock = 2;
-            mySkillDef.baseRechargeInterval = 9f;
+            mySkillDef.baseRechargeInterval = 7f;
             mySkillDef.beginSkillCooldownOnSkillEnd = true;
             mySkillDef.canceledFromSprinting = false;
             mySkillDef.cancelSprintingOnActivation = false;
@@ -81,7 +81,7 @@ namespace HuntressSkills.Skills
 
             public static float procCoefficient = 1f;
 
-            public static float cooldownReductionOnCrit = 3f;
+            public static float cooldownReductionOnCrit = 2f;
 
             public static GameObject blinkPrefab = BaseBeginArrowBarrage.blinkPrefab;
 
@@ -293,11 +293,11 @@ namespace HuntressSkills.Skills
                     bulletCount = (uint)1,
                     damage = damageStat * damageCoefficient,
                     damageColorIndex = DamageColorIndex.Default,
-                    falloffModel = BulletAttack.FalloffModel.DefaultBullet,
+                    falloffModel = BulletAttack.FalloffModel.None,
                     force = 2f,
                     procChainMask = default(ProcChainMask),
                     procCoefficient = procCoefficient,
-                    maxDistance = 300f,
+                    maxDistance = 1000f,
                     isCrit = isCrit,
                     muzzleName = f.muzzleName,
                     hitEffectPrefab = f.hitEffectPrefab,

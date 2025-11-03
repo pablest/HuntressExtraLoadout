@@ -2945,17 +2945,17 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Pablest\\Desktop\\ror2 mods\\HuntressExtraLoadout\\HuntressSkills\\HuntressSkills.csproj",
+      "projectUniqueName": "C:\\Users\\Pablest\\Desktop\\ror2 mods\\MoreHuntressSkills\\HuntressSkills\\HuntressSkills.csproj",
       "projectName": "HuntressSkills",
-      "projectPath": "C:\\Users\\Pablest\\Desktop\\ror2 mods\\HuntressExtraLoadout\\HuntressSkills\\HuntressSkills.csproj",
+      "projectPath": "C:\\Users\\Pablest\\Desktop\\ror2 mods\\MoreHuntressSkills\\HuntressSkills\\HuntressSkills.csproj",
       "packagesPath": "C:\\Users\\Pablest\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Pablest\\Desktop\\ror2 mods\\HuntressExtraLoadout\\HuntressSkills\\obj\\",
+      "outputPath": "C:\\Users\\Pablest\\Desktop\\ror2 mods\\MoreHuntressSkills\\HuntressSkills\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Pablest\\Desktop\\ror2 mods\\HuntressExtraLoadout\\NuGet.Config",
+        "C:\\Users\\Pablest\\Desktop\\ror2 mods\\MoreHuntressSkills\\NuGet.Config",
         "C:\\Users\\Pablest\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"

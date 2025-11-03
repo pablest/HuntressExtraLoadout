@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HuntressSkills")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a2787bb6780c211b90bea26b5f1258bffa45035e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+054f0df2b0fd7e764e0c97a7852d70dd5cdd7801")]
 [assembly: System.Reflection.AssemblyProductAttribute("HuntressSkills")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HuntressSkills")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

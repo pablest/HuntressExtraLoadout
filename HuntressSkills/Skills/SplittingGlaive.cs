@@ -122,6 +122,7 @@ namespace HuntressSkills.Skills
                 {
                     initialOrbTarget = huntressTracker.GetTrackingTarget();
                 }
+                if (!initialOrbTarget){return;}
                 if ((bool)base.characterMotor && smallHopStrength != 0f)
                 {
                     base.characterMotor.velocity.y = smallHopStrength;
